@@ -1,5 +1,7 @@
 # Team Radar · 团队雷达
 
+[![test](https://github.com/c64136071-crypto/dsh-team-radar/actions/workflows/test.yml/badge.svg)](https://github.com/c64136071-crypto/dsh-team-radar/actions/workflows/test.yml)
+
 把 DeepSeek Harness **Agent Teams** 的成员和共享任务画成一张实时雷达图的 Web UI 插件。
 
 > 这是一个独立插件（bundle），不修改 DSH 本体。安装后会在会话标题栏多出一个「团队雷达」按钮：
@@ -14,6 +16,7 @@
 ## 特性
 
 - **雷达图成员视图**：Lead 居中、teammates 环绕；运行中的成员带呼吸光环和旋转扫描线，失败/筹备中/空闲各有独立配色。
+- **点节点即开会话**：点击任一成员节点直接跳到它的会话；当前会话成员带虚线外圈；悬停可看模型、认领任务数和失败原因。
 - **共享任务看板**：完成任务比例进度条，任务卡片显示负责人、依赖阻塞、可认领状态。
 - **实时**：直接读取 Session store 的 `agentTeam` 投影，无需轮询，也不发起额外请求。
 - **只读、零副作用**：不创建会话、不发送消息、不写任务。
@@ -51,7 +54,7 @@ dsh plugin --profile desktop remove dsh-plugin-team-radar
 
 1. 让 Lead 使用 Agent Teams 创建队友（`spawn_teammate`）和任务（`team_task_create`）；
 2. 打开 Lead 会话，点击标题栏的「团队雷达」；
-3. 雷达节点会随成员状态实时变化，任务卡片随任务看板更新。
+3. 雷达节点会随成员状态实时变化，任务卡片随任务看板更新；点节点可直接跳到成员会话。
 
 没有团队时按钮不显示——它只在 `agentTeam` 投影存在时出现。
 
@@ -74,10 +77,14 @@ dsh plugin --profile desktop remove dsh-plugin-team-radar
 ```sh
 pnpm install   # 只装测试用的 devDependencies（react / react-dom / jsdom）
 pnpm test      # 冒烟测试 + jsdom 渲染测试
+pnpm run preview  # 用真实组件渲染 docs/preview.html（截图素材）
 ```
 
 - `scripts/smoke.cjs`：桩掉 React 与模块加载器，校验模块注册、槽位注册、中英词典；
-- `scripts/render-test.cjs`：jsdom + 真实 React 渲染，点击触发器并断言面板 DOM（雷达节点、任务卡片、进度、空状态）。
+- `scripts/render-test.cjs`：jsdom + 真实 React 渲染，点击触发器并断言面板 DOM（雷达节点、任务卡片、进度、当前会话环、节点点击回调）；
+- `scripts/screenshot.cjs`：渲染出预览页，配合无头浏览器生成 `docs/screenshot.png`。
+
+实现笔记（插件加载协议、投影、slot、踩坑）见 [docs/blog-dsh-team-radar.md](docs/blog-dsh-team-radar.md)。
 
 修改后：DSH 开启 HMR 时，替换 `client.js` 内容会在下一次组合时热加载；没有 HMR 时重启 DSH。
 

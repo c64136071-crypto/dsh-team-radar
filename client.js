@@ -38,6 +38,7 @@ window.__ModuleLoader__.load({
       noTasks: '还没有共享任务。',
       close: '关闭',
       open: '打开团队雷达',
+      openMember: '打开成员会话',
     };
 
     const en = {
@@ -61,6 +62,7 @@ window.__ModuleLoader__.load({
       noTasks: 'No shared tasks yet.',
       close: 'Close',
       open: 'Open team radar',
+      openMember: 'Open member session',
     };
 
     const TASK_LABEL = {
@@ -94,6 +96,10 @@ window.__ModuleLoader__.load({
 .tr_nodeFailed{fill:color-mix(in srgb,var(--dsw-alias-state-error-primary,#ff5d5d) 24%,var(--dsw-alias-bg-layer-3,#262b31));stroke:var(--dsw-alias-state-error-primary,#ff5d5d)}
 .tr_nodeProvisioning{fill:color-mix(in srgb,var(--dsw-alias-label-tertiary,#8b949e) 22%,var(--dsw-alias-bg-layer-3,#262b31));stroke:var(--dsw-alias-label-tertiary,#8b949e)}
 .tr_nodeIdle{fill:var(--dsw-alias-bg-layer-3,#262b31);stroke:var(--dsw-alias-border-l3,rgba(255,255,255,.25))}
+.tr_nodeClickable{cursor:pointer;outline:none}
+.tr_nodeClickable:hover .tr_nodeCore,.tr_nodeClickable:focus-visible .tr_nodeCore{filter:brightness(1.3)}
+.tr_nodeClickable:focus-visible .tr_currentRing,.tr_nodeClickable:focus-visible .tr_nodeCore{stroke-width:2}
+.tr_currentRing{fill:none;stroke:var(--dsw-alias-state-business-primary,#4d8dff);stroke-width:1.5;stroke-dasharray:3 3;opacity:.85}
 .tr_pulse{fill:none;stroke:var(--dsw-alias-state-business-primary,#4d8dff);stroke-width:1.5;opacity:0;transform-box:fill-box;transform-origin:center;animation:tr_pulse 2.2s ease-out infinite}
 .tr_glyph{font-size:12px;font-weight:600;fill:var(--dsw-alias-label-primary,#e6edf3);pointer-events:none}
 .tr_name{font-size:11px;font-weight:500;fill:var(--dsw-alias-label-primary,#e6edf3);pointer-events:none}
@@ -158,8 +164,9 @@ window.__ModuleLoader__.load({
       return (running ?? summaryRunning) === true ? 'running' : 'idle';
     }
 
-    function RadarNode({ member, x, y, lead, useSessionStatus, useSessions, tasks, t }) {
+    function RadarNode({ member, x, y, lead, sessionId, useSessionStatus, useSessions, tasks, t, openMember }) {
       const status = useMemberStatus(member, useSessionStatus, useSessions);
+      const model = useSessions((state) => state.projectionsBySession?.[member.id]?.values?.modelSelection?.next?.model);
       const name = member.role === 'lead' ? t('lead') : member.name || 'teammate';
       const initial = name.slice(0, 1).toUpperCase();
       const radius = lead ? 25 : 19;
@@ -172,9 +179,34 @@ window.__ModuleLoader__.load({
             : status === 'provisioning'
               ? 'tr_nodeProvisioning'
               : 'tr_nodeIdle';
+      const current = member.id === sessionId;
+      const tooltip = [name, t(status), model, owned > 0 ? owned + ' ' + t('tasks') : null, member.error ?? null]
+        .filter((part) => part !== undefined && part !== null && part !== '')
+        .join(' · ');
+      const open = () => {
+        try {
+          openMember?.(sessionId, member.id);
+        } catch {
+          /* Navigation failures leave the panel open; the trigger stays usable. */
+        }
+      };
       return h(
         'g',
-        null,
+        {
+          className: 'tr_nodeClickable',
+          role: 'button',
+          tabIndex: 0,
+          'aria-label': t('openMember') + ': ' + name,
+          onClick: open,
+          onKeyDown: (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              open();
+            }
+          },
+        },
+        h('title', null, tooltip),
+        current ? h('circle', { cx: x, cy: y, r: radius + 5, className: 'tr_currentRing' }) : null,
         h('circle', { cx: x, cy: y, r: radius, className: 'tr_nodeCore ' + statusClass }),
         status === 'running' ? h('circle', { cx: x, cy: y, r: radius, className: 'tr_pulse' }) : null,
         h('text', { x: x, y: y + 4.5, textAnchor: 'middle', className: 'tr_glyph' }, initial),
@@ -187,7 +219,7 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function RadarMap({ members, tasks, useSessionStatus, useSessions, t }) {
+    function RadarMap({ members, tasks, sessionId, useSessionStatus, useSessions, t, openMember }) {
       const width = 332;
       const height = 236;
       const cx = width / 2;
@@ -228,10 +260,12 @@ window.__ModuleLoader__.load({
             x: node.x,
             y: node.y,
             lead: false,
+            sessionId,
             useSessionStatus,
             useSessions,
             tasks,
             t,
+            openMember,
           })
         ),
         lead
@@ -241,10 +275,12 @@ window.__ModuleLoader__.load({
               x: cx,
               y: cy,
               lead: true,
+              sessionId,
               useSessionStatus,
               useSessions,
               tasks,
               t,
+              openMember,
             })
           : null
       );
@@ -272,7 +308,7 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function RadarPanel({ team, useSessions, useSessionStatus, t, onClose, anchorRef }) {
+    function RadarPanel({ team, sessionId, useSessions, useSessionStatus, t, onClose, anchorRef, openMember }) {
       const panelRef = useRef(null);
       const [position, setPosition] = useState(null);
 
@@ -347,7 +383,7 @@ window.__ModuleLoader__.load({
           members.length === 0
             ? h('p', { className: 'tr_empty' }, t('noTeam'))
             : [
-                h(RadarMap, { key: 'map', members, tasks, useSessionStatus, useSessions, t }),
+                h(RadarMap, { key: 'map', members, tasks, sessionId, useSessionStatus, useSessions, t, openMember }),
                 h(
                   'div',
                   { key: 'progress', className: 'tr_progress' },
@@ -373,7 +409,7 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function TeamRadarAction({ sessionId, useSession, useSessions, useSessionStatus, t }) {
+    function TeamRadarAction({ sessionId, useSession, useSessions, useSessionStatus, t, openMember }) {
       const [open, setOpen] = useState(false);
       const triggerRef = useRef(null);
       const leadSessionId = useSession((snapshot) => snapshot?.subagent?.address?.parentSessionId) ?? sessionId;
@@ -408,11 +444,13 @@ window.__ModuleLoader__.load({
           ? ReactDOM.createPortal(
               h(RadarPanel, {
                 team,
+                sessionId,
                 useSessions,
                 useSessionStatus,
                 t,
                 onClose: () => setOpen(false),
                 anchorRef: triggerRef,
+                openMember,
               }),
               document.body
             )
@@ -429,6 +467,22 @@ window.__ModuleLoader__.load({
           removeStyles();
         };
       }, 'team-radar: styles and dictionaries');
+
+      const sessions = ctx.sessions;
+      const resolveLeadSession = (targetSessionId) =>
+        sessions.binding(targetSessionId)?.session.getSnapshot().subagent?.address?.parentSessionId ?? targetSessionId;
+      const actions = {
+        openMember(targetSessionId, memberSessionId) {
+          const leadSessionId = resolveLeadSession(targetSessionId);
+          if ((sessions.retainInfo(targetSessionId).getSnapshot().retainedBy.mainView ?? 0) === 0) return;
+          if (memberSessionId === leadSessionId) {
+            ctx.uiWorkspace.openSession(leadSessionId);
+            return;
+          }
+          ctx.uiWorkspace.openSession({ parentSessionId: leadSessionId, childSessionId: memberSessionId, mode: 'continuable' });
+        },
+      };
+
       ctx.slots.inject('conversation.session.header.actions', () =>
         ctx.slots.register(
           {
@@ -436,6 +490,7 @@ window.__ModuleLoader__.load({
             id: 'team-radar',
             order: 100,
             locale: NS,
+            inject: () => actions,
           },
           TeamRadarAction
         )
@@ -443,7 +498,7 @@ window.__ModuleLoader__.load({
     }
 
     return {
-      inject: ['slots', 'locale'],
+      inject: ['slots', 'locale', 'sessions', 'uiWorkspace'],
       apply,
     };
   },

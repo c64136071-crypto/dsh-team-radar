@@ -137,7 +137,8 @@ const team = {
   ],
 };
 
-const makeProps = (teamValue) => ({
+const openedMembers = [];
+const makeProps = (teamValue, openMember) => ({
   sessionId: 's-lead',
   useSession: (selector) => selector({ subagent: undefined }),
   useSessions: (selector) =>
@@ -147,6 +148,7 @@ const makeProps = (teamValue) => ({
     }),
   useSessionStatus: (selector) => selector({ get: () => undefined }),
   t,
+  openMember: openMember ?? ((sessionId, memberId) => openedMembers.push([sessionId, memberId])),
 });
 
 const container = document.getElementById('root');
@@ -174,7 +176,18 @@ assert.ok(panel.textContent.includes('review generated parser'), 'second task su
 assert.ok(panel.textContent.includes('write progress report'), 'third task subject missing');
 assert.ok(panel.textContent.includes('1/3'), 'task progress missing');
 assert.ok(panel.querySelectorAll('li.tr_task').length === 3, 'expected three task rows');
-assert.ok(panel.querySelector('.tr_dot_*.tr_dot_pending') === null || true);
+assert.strictEqual(panel.querySelectorAll('.tr_currentRing').length, 1, 'current session node should be ringed');
+
+// Clicking a member node asks the host to open that member's session.
+const clickable = [...panel.querySelectorAll('g.tr_nodeClickable')];
+assert.strictEqual(clickable.length, 3, 'every member node should be clickable');
+const coderNode = clickable.find((node) => node.textContent.includes('coder'));
+assert.ok(coderNode, 'coder node missing');
+act(() => {
+  coderNode.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+});
+assert.deepStrictEqual(openedMembers[0], ['s-lead', 's-coder'], 'member click should request the coder session');
+assert.ok(coderNode.querySelector('title').textContent.includes('coder'), 'node tooltip should name the member');
 
 act(() => {
   root.unmount();

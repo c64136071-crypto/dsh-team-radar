@@ -1,9 +1,20 @@
 {
   "name": "dsh-plugin-team-radar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Team Radar: a live radar map of DeepSeek Harness Agent Teams members and shared tasks.",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/c64136071-crypto/dsh-team-radar.git"
+  },
+  "homepage": "https://github.com/c64136071-crypto/dsh-team-radar#readme",
+  "bugs": {
+    "url": "https://github.com/c64136071-crypto/dsh-team-radar/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "keywords": [
     "dsh",
     "deepseek-harness",
@@ -24,7 +35,9 @@
     "icon.svg",
     "README.md",
     "LICENSE",
-    "docs/",
+    "docs/screenshot.png",
+    "docs/blog-dsh-team-radar.md",
+    "docs/en-intro.md",
     "scripts/"
   ],
   "dsh": {
