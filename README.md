@@ -30,7 +30,13 @@
 1. 打开 **插件** 页 → **添加插件** → **让 Agent 创建插件**，进入创造模式会话；
 2. 让 Agent 安装本目录的 bundle（`install_bundle`，`target` 指向本目录绝对路径）。
 
-### 方式二：CLI
+### 方式二：从 GitHub 安装（无需 npm）
+
+```sh
+dsh plugin --profile desktop add github:c64136071-crypto/dsh-team-radar
+```
+
+### 方式三：本地开发
 
 ```sh
 dsh plugin --profile desktop add link:/absolute/path/to/team-radar
@@ -38,7 +44,7 @@ dsh plugin --profile desktop add link:/absolute/path/to/team-radar
 
 然后把 `dsh-plugin-team-radar` 追加到 profile 的 `package.json` → `dsh.profile.bundles` 列表末尾，刷新页面（DSH 开启 HMR 时自动生效）。
 
-### 方式三：手动（不推荐，仅调试用）
+### 方式四：手动（不推荐，仅调试用）
 
 把包链接进 profile 的 `node_modules`，并在 `dsh.profile.bundles` 中选中本包。
 
