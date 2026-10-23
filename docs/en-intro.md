@@ -1,0 +1,5 @@
+# Team Radar
+
+Team Radar is a web UI plugin for DeepSeek Harness Agent Teams. It draws the team as a radar: the Lead sits at the center, teammates orbit as nodes colored by live status (running, idle, failed, provisioning), and a shared-task board below shows completion progress plus task cards with owner, dependency blockers, and claimable state. The panel is read-only and updates in real time from the session's `agentTeam` projection, with no polling or extra requests.
+
+It exists to make multi-agent work observable: when a Lead runs several teammates against a shared task board, the conversation alone makes it hard to tell who is doing what. The plugin installs as a bundle — a host `cordis.patch.yml` row plus a prebuilt `client.js` browser module that registers into `conversation.session.header.actions`. Add it with `dsh plugin --profile desktop add link:/absolute/path/to/team-radar` (or `install_bundle` from the plugin page), refresh, and it is ready; there is no build step and HMR picks up client changes.

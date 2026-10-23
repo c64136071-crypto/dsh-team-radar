@@ -1,0 +1,6 @@
+# Team Radar bundle patch: one Host row named after the package.
+# The Client module (web) is discovered from package.json `dsh.client`.
+- insert:
+    - id: team-radar
+      name: 'dsh-plugin-team-radar'
+      config: {}

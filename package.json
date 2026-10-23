@@ -1,0 +1,48 @@
+{
+  "name": "dsh-plugin-team-radar",
+  "version": "0.1.0",
+  "description": "Team Radar: a live radar map of DeepSeek Harness Agent Teams members and shared tasks.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "agent-teams",
+    "plugin"
+  ],
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "node scripts/smoke.cjs && node scripts/render-test.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}
