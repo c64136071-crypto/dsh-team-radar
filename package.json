@@ -23,7 +23,9 @@
     "locale/*.json",
     "icon.svg",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "docs/",
+    "scripts/"
   ],
   "dsh": {
     "bundle": {
@@ -38,7 +40,8 @@
     }
   },
   "scripts": {
-    "test": "node scripts/smoke.cjs && node scripts/render-test.cjs"
+    "test": "node scripts/smoke.cjs && node scripts/render-test.cjs",
+    "preview": "node scripts/screenshot.cjs"
   },
   "devDependencies": {
     "jsdom": "26.1.0",

@@ -5,7 +5,10 @@
 > 这是一个独立插件（bundle），不修改 DSH 本体。安装后会在会话标题栏多出一个「团队雷达」按钮：
 > 成员是雷达上的节点，共享任务是下方的进度条和任务卡片，全部从 Session 投影实时更新。
 
-<!-- 截图待补：docs/screenshot.png -->
+![Team Radar](./docs/screenshot.png)
+
+> 截图不是手绘的：它由真实组件在 jsdom 中渲染，再交给无头浏览器截屏
+> （`pnpm run preview` + 下方 Edge 命令），与实际运行结果一致。
 
 
 ## 特性

@@ -163,7 +163,7 @@ window.__ModuleLoader__.load({
       const name = member.role === 'lead' ? t('lead') : member.name || 'teammate';
       const initial = name.slice(0, 1).toUpperCase();
       const radius = lead ? 25 : 19;
-      const owned = member.role === 'lead' ? tasks.length : tasks.filter((task) => task.ownerName === member.name).length;
+      const owned = tasks.filter((task) => task.ownerName === member.name).length;
       const statusClass =
         status === 'running'
           ? 'tr_nodeRunning'
